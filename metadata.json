@@ -1,0 +1,6 @@
+
+{
+  "name": "AI Thumbnail Generator",
+  "description": "Generate multiple eye-catching thumbnail variants in seconds. Upload a photo, provide creative context, and let AI create options in both 16:9 and 9:16 aspect ratios.",
+  "requestFramePermissions": []
+}
