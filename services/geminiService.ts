@@ -79,8 +79,13 @@ export async function generateThumbnail(
         Produce a realistic, clickable YouTube thumbnail where the user’s face is the focal point, supported by bold readable text and a clean, high-contrast layout optimized for CTR.
         `;
 
+        // Use absolute URL in production, relative in development
+        const baseUrl = process.env.NODE_ENV === 'production' 
+            ? 'https://generativelanguage.googleapis.com/v1beta'
+            : '/api/gemini/v1beta';
+            
         const response = await fetch(
-            `/api/gemini/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${GEMINI_API_KEY}`,
+            `${baseUrl}/models/gemini-2.5-flash-image-preview:generateContent?key=${GEMINI_API_KEY}`,
             {
                 method: 'POST',
                 headers: {
