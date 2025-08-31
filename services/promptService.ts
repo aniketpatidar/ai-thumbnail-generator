@@ -2,7 +2,6 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import OpenAI from 'openai';
 
 interface UserChoices {
     videoType: string;
@@ -22,20 +21,14 @@ interface EnhancedPrompt {
 }
 
 /**
- * Enhanced prompt rewriting service using Groq API for fast inference
+ * Enhanced prompt rewriting service using Gemini API for fast inference
  */
 export async function enhancePromptWithOpenAI(userChoices: UserChoices): Promise<EnhancedPrompt> {
     try {
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
-        if (!GROQ_API_KEY) {
-            throw new Error('GROQ_API_KEY environment variable is not set');
+        const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+        if (!GEMINI_API_KEY) {
+            throw new Error('GEMINI_API_KEY environment variable is not set');
         }
-
-        const client = new OpenAI({
-            baseURL: "https://api.groq.com/openai/v1",
-            apiKey: GROQ_API_KEY,
-            dangerouslyAllowBrowser: true
-        });
 
         const USER_PROMPT = `
         Generate a thumbnail design plan for:
@@ -46,21 +39,22 @@ export async function enhancePromptWithOpenAI(userChoices: UserChoices): Promise
         `;
 
         const SYSTEM_PROMPT = `
-        You are a senior creative director who specializes in designing **high-performing YouTube thumbnails**. 
-        Your goal is to transform simple user inputs into **detailed, production-ready thumbnail prompts** for an AI image generator. 
+        You are a senior creative director who specializes in designing **high-performing YouTube thumbnails**.
+        Your goal is to transform simple user inputs into **detailed, production-ready thumbnail prompts** for an AI image generator.
         Every response must be **valid JSON** following the schema below.
-        
+        User face should be same as in the photo.
+
         Schema:
         {
-          "detailedPrompt": "Rich description of the thumbnail scene, subject, background, and atmosphere. Be concrete and visual — specify subject’s pose, expression, clothing, and environment.",
+          "detailedPrompt": "Rich description of the thumbnail scene, subject, background, and atmosphere. Be concrete and visual — specify subject's pose, expression, clothing, and environment.",
           "styleGuide": "Precise art direction (photorealistic, cinematic, flat vector, cartoon, painterly, etc.) with references if useful.",
           "colorPalette": "Exact scheme — include 3-5 core colors and describe their emotional effect (e.g., 'vibrant red + yellow for urgency, dark background for contrast').",
           "compositionNotes": "Guidance on framing (close-up vs wide shot), focal points, spacing, and use of negative space.",
           "textGuidance": "Instructions for text overlay — size, font style (bold/clean/futuristic/handwritten), placement (top-left, bottom-right, center), and contrast requirements.",
-          "imagePlacement": "Where to position the user’s photo or main subject (left/right/center/foreground/background). Be explicit.",
+          "imagePlacement": "Where to position the user's photo or main subject (left/right/center/foreground/background). Be explicit.",
           "visualBalance": "Rules to balance subject, text, and background — e.g., 'subject on left, bold text on right with high contrast; background blurred to emphasize subject'."
         }
-        
+
         Rules:
         - Always produce specific, **actionable** design directions — avoid vague terms like "make it look nice".
         - Assume the goal is **maximum CTR**: high-contrast, bold, emotional, legible on small screens.
@@ -69,30 +63,69 @@ export async function enhancePromptWithOpenAI(userChoices: UserChoices): Promise
         - NEVER include logos, watermarks, or extra borders.
         - Make sure the response is strictly valid JSON (no extra commentary).
         `;
-        const completion = await client.chat.completions.create({
-            model: "openai/gpt-oss-20b",
-            messages: [
-                {
-                    role: "system",
-                    content: SYSTEM_PROMPT
-                },
-                {
-                    role: "user",
-                    content: USER_PROMPT
-                }
-            ],
-            temperature: 0.8,
-            max_tokens: 1000
-        });
 
-        const content = completion.choices[0]?.message?.content;
+        // Use direct Gemini API call
+        const baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
+
+        const response = await fetch(
+            `${baseUrl}/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'AI-Thumbnail-Generator/1.0'
+                },
+                body: JSON.stringify({
+                    model: "gemini-1.5-flash",
+                    contents: [
+                        {
+                            parts: [
+                                {
+                                    text: `${SYSTEM_PROMPT}\n\n${USER_PROMPT}`
+                                }
+                            ]
+                        }
+                    ],
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 800,
+                        topP: 0.8,
+                        topK: 40
+                    }
+                })
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Gemini API request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.candidates || !data.candidates[0]?.content?.parts) {
+            throw new Error('Invalid response format from Gemini API');
+        }
+
+        const content = data.candidates[0].content.parts[0]?.text;
 
         if (!content) {
-            throw new Error('No content received from Groq API');
+            throw new Error('No content received from Gemini API');
         }
 
         try {
-            const parsed = JSON.parse(content);
+            // Clean up the content to fix JSON parsing issues
+            let cleanedContent = content.trim();
+
+            // Remove any markdown code block markers
+            cleanedContent = cleanedContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
+
+            // Try to extract JSON from the content
+            const jsonMatch = cleanedContent.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                cleanedContent = jsonMatch[0];
+            }
+
+            const parsed = JSON.parse(cleanedContent);
             return {
                 detailedPrompt: parsed.detailedPrompt || '',
                 styleGuide: parsed.styleGuide || '',
@@ -103,6 +136,7 @@ export async function enhancePromptWithOpenAI(userChoices: UserChoices): Promise
                 visualBalance: parsed.visualBalance || ''
             };
         } catch (parseError) {
+            console.warn('JSON parsing failed, using content as detailed prompt:', parseError);
             // If JSON parsing fails, treat the content as a detailed prompt
             return {
                 detailedPrompt: content,
@@ -115,7 +149,7 @@ export async function enhancePromptWithOpenAI(userChoices: UserChoices): Promise
             };
         }
     } catch (error) {
-        console.warn('Groq API service failed, falling back to basic enhancement:', error);
+        console.warn('Gemini API service failed, falling back to basic enhancement:', error);
         return createBasicEnhancedPrompt(userChoices);
     }
 }

@@ -4,15 +4,25 @@
 */
 import React from 'react';
 import { motion } from 'framer-motion';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Layers } from 'lucide-react';
 
 interface ProgressIndicatorProps {
     current: number;
     total: number;
     message?: string;
+    batchInfo?: {
+        currentBatch: number;
+        totalBatches: number;
+        batchSize: number;
+    };
 }
 
-const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({ current, total, message }) => {
+const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
+    current,
+    total,
+    message,
+    batchInfo
+}) => {
     const percentage = Math.round((current / total) * 100);
 
     const steps = [
@@ -44,6 +54,21 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({ current, total, m
                 <p className="text-sm text-neutral-400">
                     {message || steps[currentStep]}
                 </p>
+
+                {/* Batch Processing Info */}
+                {batchInfo && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-3 flex items-center justify-center gap-2 text-xs text-neutral-500"
+                    >
+                        <Layers className="h-3 w-3" />
+                        <span>
+                            Batch {batchInfo.currentBatch}/{batchInfo.totalBatches}
+                            ({batchInfo.batchSize} concurrent)
+                        </span>
+                    </motion.div>
+                )}
             </div>
 
             {/* Progress Bar */}

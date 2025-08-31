@@ -5,7 +5,6 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
     define: {
-      'process.env.GROQ_API_KEY': JSON.stringify(env.GROQ_API_KEY),
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
       'process.env.DEMO_USERNAME': JSON.stringify(env.DEMO_USERNAME),
       'process.env.DEMO_PASSWORD': JSON.stringify(env.DEMO_PASSWORD)

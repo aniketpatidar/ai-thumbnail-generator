@@ -38,6 +38,14 @@ const videoTypeOptions = ["Tutorial", "Vlog", "Gaming", "Review", "Unboxing"];
 const styleMoodOptions = ["Bold", "Minimalist", "Dramatic", "Fun", "Vintage"];
 const placementOptions = ["Left", "Center", "Right"];
 
+// Batch processing configuration
+const BATCH_CONFIG = {
+    batchSize: 2,        // Number of thumbnails to process simultaneously
+    batchDelay: 1000,    // Delay between batches in milliseconds
+    maxRetries: 1,       // Maximum retries per thumbnail
+    timeout: 30000       // Timeout per thumbnail in milliseconds
+};
+
 function App() {
     const [authenticated, setAuthenticated] = useState(false);
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -49,6 +57,11 @@ function App() {
     const [isGeneratingAlbum, setIsGeneratingAlbum] = useState(false);
     const [prompt, setPrompt] = useState<string>('');
     const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0 });
+    const [batchInfo, setBatchInfo] = useState<{
+        currentBatch: number;
+        totalBatches: number;
+        batchSize: number;
+    } | null>(null);
     const [clipboardSupported, setClipboardSupported] = useState(false);
 
     // Check authentication and clipboard support on mount
@@ -73,6 +86,7 @@ function App() {
         setPrompt('');
         setAppState('idle');
         setGenerationProgress({ current: 0, total: 0 });
+        setBatchInfo(null);
         toast.success('You have been signed out.');
     };
 
@@ -94,6 +108,7 @@ function App() {
 
         setAppState('generating');
         setGenerationProgress({ current: 0, total: 6 });
+        setBatchInfo(null);
 
         const variantsToGenerate = [
             { id: 1, title: '16:9', aspectRatio: '16:9' as const },
@@ -112,30 +127,82 @@ function App() {
 
         const userChoices = { videoType, styleMood, photoPlacement, prompt };
 
-        // Generate thumbnails with progress tracking
+        // Generate thumbnails with batch processing for better performance
         let completedCount = 0;
-        const promises = initialThumbnails.map(async (thumb, index) => {
-            try {
-                const resultUrl = await generateThumbnail(uploadedImage, userChoices, thumb.aspectRatio);
-                setThumbnails(prev => prev.map(t =>
-                    t.id === thumb.id ? { ...t, status: 'done', url: resultUrl } : t
-                ));
-                completedCount++;
-                setGenerationProgress({ current: completedCount, total: 6 });
-                toast.success(`${thumb.title} generated successfully!`);
-            } catch (err) {
-                const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
-                setThumbnails(prev => prev.map(t =>
-                    t.id === thumb.id ? { ...t, status: 'error', error: errorMessage } : t
-                ));
-                completedCount++;
-                setGenerationProgress({ current: completedCount, total: 6 });
-                toast.error(`Failed to generate ${thumb.title}: ${errorMessage}`);
-                console.error(`Failed to generate thumbnail for ${thumb.title} (ID: ${thumb.id}):`, err);
-            }
-        });
 
-        await Promise.allSettled(promises);
+        console.log(`🚀 Starting batch processing: ${initialThumbnails.length} thumbnails in batches of ${BATCH_CONFIG.batchSize}`);
+        console.log(`⚙️ Configuration: ${BATCH_CONFIG.batchSize} concurrent, ${BATCH_CONFIG.batchDelay}ms delay, ${BATCH_CONFIG.timeout}ms timeout`);
+
+        // Process thumbnails in batches
+        for (let i = 0; i < initialThumbnails.length; i += BATCH_CONFIG.batchSize) {
+            const batch = initialThumbnails.slice(i, i + BATCH_CONFIG.batchSize);
+            const batchNumber = Math.floor(i / BATCH_CONFIG.batchSize) + 1;
+            const totalBatches = Math.ceil(initialThumbnails.length / BATCH_CONFIG.batchSize);
+
+            // Update batch info for UI
+            setBatchInfo({
+                currentBatch: batchNumber,
+                totalBatches,
+                batchSize: BATCH_CONFIG.batchSize
+            });
+
+            console.log(`📦 Processing batch ${batchNumber}/${totalBatches} with ${batch.length} thumbnails`);
+
+            // Process current batch in parallel with timeout
+            const batchPromises = batch.map(async (thumb) => {
+                try {
+                    console.log(`🔄 Starting generation for thumbnail ${thumb.id} (${thumb.aspectRatio})`);
+
+                    // Add timeout to each thumbnail generation
+                    const resultUrl = await Promise.race([
+                        generateThumbnail(uploadedImage, userChoices, thumb.aspectRatio),
+                        new Promise<string>((_, reject) =>
+                            setTimeout(() => reject(new Error('Generation timeout')), BATCH_CONFIG.timeout)
+                        )
+                    ]);
+
+                    setThumbnails(prev => prev.map(t =>
+                        t.id === thumb.id ? { ...t, status: 'done', url: resultUrl } : t
+                    ));
+                    completedCount++;
+                    setGenerationProgress({ current: completedCount, total: initialThumbnails.length });
+
+                    console.log(`✅ Thumbnail ${thumb.id} completed successfully`);
+                    toast.success(`${thumb.title} generated successfully!`);
+
+                    return { success: true, thumbnail: thumb };
+                } catch (err) {
+                    const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
+
+                    setThumbnails(prev => prev.map(t =>
+                        t.id === thumb.id ? { ...t, status: 'error', error: errorMessage } : t
+                    ));
+                    completedCount++;
+                    setGenerationProgress({ current: completedCount, total: initialThumbnails.length });
+
+                    console.error(`❌ Failed to generate thumbnail ${thumb.id}:`, err);
+                    toast.error(`Failed to generate ${thumb.title}: ${errorMessage}`);
+
+                    return { success: false, thumbnail: thumb, error: errorMessage };
+                }
+            });
+
+            // Wait for current batch to complete
+            const batchResults = await Promise.allSettled(batchPromises);
+
+            // Log batch results
+            const successfulInBatch = batchResults.filter(result =>
+                result.status === 'fulfilled' && result.value.success
+            ).length;
+
+            console.log(`📊 Batch ${batchNumber} completed: ${successfulInBatch}/${batch.length} successful`);
+
+            // Add delay before next batch (except for the last batch)
+            if (i + BATCH_CONFIG.batchSize < initialThumbnails.length) {
+                console.log(`⏳ Waiting ${BATCH_CONFIG.batchDelay}ms before next batch...`);
+                await new Promise(resolve => setTimeout(resolve, BATCH_CONFIG.batchDelay));
+            }
+        }
         setAppState('results-shown');
         toast.success('All thumbnails generated! Check out your results below.');
     };
@@ -177,6 +244,7 @@ function App() {
         setPrompt('');
         setAppState('idle');
         setGenerationProgress({ current: 0, total: 0 });
+        setBatchInfo(null);
         toast.success('Reset complete! Ready to create new thumbnails.');
     };
 
@@ -196,11 +264,11 @@ function App() {
                 // Create an image element to load the image data
                 const img = new Image();
                 img.crossOrigin = 'Anonymous';
-                
+
                 // Create a canvas to draw the image with the correct aspect ratio
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                
+
                 // Set canvas dimensions based on aspect ratio
                 if (thumb.aspectRatio === '16:9') {
                     canvas.width = 1280;  // Standard HD width
@@ -209,7 +277,7 @@ function App() {
                     canvas.width = 720;    // Standard portrait width
                     canvas.height = 1280;   // Standard portrait height (9:16)
                 }
-                
+
                 // Load the image and draw it on the canvas
                 await new Promise<void>((resolve, reject) => {
                     img.onload = () => {
@@ -224,7 +292,7 @@ function App() {
                     img.onerror = () => reject(new Error('Failed to load image'));
                     img.src = thumb.url!;
                 });
-                
+
                 // Convert canvas to blob and add to zip
                 const blob = await new Promise<Blob>((resolve, reject) => {
                     canvas.toBlob((blob) => {
@@ -235,7 +303,7 @@ function App() {
                         }
                     }, 'image/jpeg', 0.95); // 0.95 quality for good compression/quality balance
                 });
-                
+
                 // Add to zip with appropriate naming
                 zip.file(`thumbnail-${thumb.id}-${thumb.aspectRatio}.jpg`, blob, { binary: true });
             }
@@ -369,6 +437,7 @@ function App() {
             <ProgressIndicator
                 current={generationProgress.current}
                 total={generationProgress.total}
+                batchInfo={batchInfo}
             />
 
             {/* Show thumbnails as they generate */}
