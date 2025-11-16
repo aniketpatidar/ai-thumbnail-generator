@@ -1,6 +1,6 @@
 # AI Thumbnail Generator
 
-Generate YouTube thumbnails using AI. Upload a photo, configure settings, and get 6 thumbnail variations (3 landscape 16:9, 3 portrait 9:16).
+Generate YouTube thumbnails instantly using AI. Upload a photo, add context, and get AI-crafted results in both 16:9 and 9:16 aspect ratios.
 
 ## Screenshots
 
