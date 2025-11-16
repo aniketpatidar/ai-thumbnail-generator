@@ -1,7 +1,7 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
+
+
+
+
 import React, { useState, DragEvent, ChangeEvent } from 'react';
 import { cn } from '../lib/utils';
 import PolaroidCard from './PolaroidCard';

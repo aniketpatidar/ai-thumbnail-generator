@@ -1,7 +1,7 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
+
+
+
+
 import { GoogleGenAI } from "@google/genai";
 
 const API_KEY = process.env.API_KEY;
@@ -26,9 +26,9 @@ interface EnhancedPrompt {
     compositionNotes: string;
 }
 
-/**
- * Enhanced prompt rewriting service using Gemini for better creative direction
- */
+
+
+
 export async function enhancePromptWithOpenAI(userChoices: UserChoices): Promise<EnhancedPrompt> {
     try {
         const promptGenerationContent = `You are an expert creative director specializing in viral YouTube thumbnails. Your task is to analyze user requirements and create detailed, creative prompts that will generate high-click-through-rate thumbnails.
@@ -75,7 +75,7 @@ export async function enhancePromptWithOpenAI(userChoices: UserChoices): Promise
                 compositionNotes: parsed.compositionNotes || ''
             };
         } catch (parseError) {
-            // If JSON parsing fails, treat the content as a detailed prompt
+            
             return {
                 detailedPrompt: content,
                 styleGuide: `Style: ${userChoices.styleMood}`,
@@ -116,9 +116,9 @@ function createBasicEnhancedPrompt(userChoices: UserChoices): EnhancedPrompt {
     };
 }
 
-/**
- * Generate a shareable link for thumbnails
- */
+
+
+
 export function generateShareLink(thumbnailData: {
     videoType: string;
     styleMood: string;

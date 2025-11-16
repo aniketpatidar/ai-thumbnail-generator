@@ -1,7 +1,7 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
+
+
+
+
 import { cn } from "../../lib/utils";
 import React, { useRef } from "react";
 import {
@@ -62,7 +62,7 @@ export const DraggableCardBody = ({
   );
  
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Don't apply hover effect while dragging
+    
     if (cardRef.current && cardRef.current.style.transform.includes('translate3d')) return;
 
     const { clientX, clientY } = e;
@@ -94,7 +94,7 @@ export const DraggableCardBody = ({
       onDrag={onDrag}
       onDragStart={(event, info) => {
         document.body.style.cursor = "grabbing";
-        // Reset rotation on drag start for a smoother experience
+        
         controls.start({
           rotateX: 0,
           rotateY: 0,
@@ -116,7 +116,7 @@ export const DraggableCardBody = ({
  
         animate(info.point.x, info.point.x + currentVelocityX * 0.3, {
           duration: 0.8,
-          // @ts-ignore
+          
           ease: [0.2, 0, 0, 1],
           bounce,
           type: "spring",
@@ -127,7 +127,7 @@ export const DraggableCardBody = ({
  
         animate(info.point.y, info.point.y + currentVelocityY * 0.3, {
           duration: 0.8,
-          // @ts-ignore
+          
           ease: [0.2, 0, 0, 1],
           bounce,
           type: "spring",

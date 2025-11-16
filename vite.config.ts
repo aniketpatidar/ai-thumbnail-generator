@@ -18,10 +18,10 @@ export default defineConfig(({ mode }) => {
           secure: false,
           configure: (proxy, _options) => {
             proxy.on('proxyReq', (proxyReq) => {
-              // Remove the Authorization header before forwarding to Google's API
-              // as we're using the API key in the URL
+              
+              
               proxyReq.removeHeader('Authorization');
-              // Add the API key to the query string
+              
               const url = new URL(proxyReq.path, 'https://generativelanguage.googleapis.com');
               url.searchParams.append('key', process.env.GEMINI_API_KEY || '');
               proxyReq.path = `${url.pathname}${url.search}`;

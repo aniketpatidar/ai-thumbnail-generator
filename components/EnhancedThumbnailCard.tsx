@@ -1,7 +1,7 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
+
+
+
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, Download, Share2, RefreshCw, Check, AlertTriangle } from 'lucide-react';
@@ -98,7 +98,7 @@ const EnhancedThumbnailCard: React.FC<EnhancedThumbnailCardProps> = ({
             if (navigator.share) {
                 await navigator.share(shareData);
             } else {
-                // Fallback: copy link to clipboard
+                
                 await copyTextToClipboard(shareData.url);
                 setIsCopied(true);
                 setTimeout(() => setIsCopied(false), 2000);
@@ -144,7 +144,7 @@ const EnhancedThumbnailCard: React.FC<EnhancedThumbnailCardProps> = ({
                 aspectRatioClass,
                 "hover:shadow-xl hover:scale-105"
             )}>
-                {/* Status Overlay */}
+                
                 {status === 'pending' && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
                         <LoadingSpinner />
@@ -157,7 +157,7 @@ const EnhancedThumbnailCard: React.FC<EnhancedThumbnailCardProps> = ({
                     </div>
                 )}
 
-                {/* Image */}
+                
                 {status === 'done' && imageUrl && (
                     <img
                         src={imageUrl}
@@ -166,10 +166,10 @@ const EnhancedThumbnailCard: React.FC<EnhancedThumbnailCardProps> = ({
                     />
                 )}
 
-                {/* Action Buttons */}
+                
                 {status === 'done' && imageUrl && (
                     <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                        {/* Copy Button */}
+                        
                         <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
@@ -184,7 +184,7 @@ const EnhancedThumbnailCard: React.FC<EnhancedThumbnailCardProps> = ({
                             )}
                         </motion.button>
 
-                        {/* Download Button */}
+                        
                         <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
@@ -196,7 +196,7 @@ const EnhancedThumbnailCard: React.FC<EnhancedThumbnailCardProps> = ({
                             <Download className="h-4 w-4" />
                         </motion.button>
 
-                        {/* Share Button */}
+                        
                         <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
@@ -208,7 +208,7 @@ const EnhancedThumbnailCard: React.FC<EnhancedThumbnailCardProps> = ({
                             <Share2 className="h-4 w-4" />
                         </motion.button>
 
-                        {/* Regenerate Button */}
+                        
                         {onRegenerate && (
                             <motion.button
                                 whileHover={{ scale: 1.1 }}
@@ -223,7 +223,7 @@ const EnhancedThumbnailCard: React.FC<EnhancedThumbnailCardProps> = ({
                     </div>
                 )}
 
-                {/* Regenerate Button for Error State */}
+                
                 {status === 'error' && onRegenerate && (
                     <div className="absolute top-2 right-2 z-20">
                         <motion.button
@@ -238,13 +238,13 @@ const EnhancedThumbnailCard: React.FC<EnhancedThumbnailCardProps> = ({
                     </div>
                 )}
 
-                {/* Aspect Ratio Badge */}
+                
                 <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
                     {aspectRatio}
                 </div>
             </div>
 
-            {/* Title */}
+            
             <div className="mt-2 text-center">
                 <p className="font-permanent-marker text-sm text-neutral-300 truncate">
                     {title}

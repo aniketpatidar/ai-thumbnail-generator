@@ -1,7 +1,7 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
+
+
+
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { generateThumbnail, regenerateThumbnail } from './services/geminiService';
@@ -19,7 +19,7 @@ import { isAuthenticated, logout } from './lib/auth';
 import toast, { Toaster } from 'react-hot-toast';
 import { LogOut } from 'lucide-react';
 
-// Define the structure for a thumbnail object
+
 interface Thumbnail {
     id: number;
     title: string;
@@ -38,12 +38,12 @@ const videoTypeOptions = ["Tutorial", "Vlog", "Gaming", "Review", "Unboxing"];
 const styleMoodOptions = ["Bold", "Minimalist", "Dramatic", "Fun", "Vintage"];
 const placementOptions = ["Left", "Center", "Right"];
 
-// Batch processing configuration
+
 const BATCH_CONFIG = {
-    batchSize: 2,        // Number of thumbnails to process simultaneously
-    batchDelay: 1000,    // Delay between batches in milliseconds
-    maxRetries: 1,       // Maximum retries per thumbnail
-    timeout: 30000       // Timeout per thumbnail in milliseconds
+    batchSize: 2,        
+    batchDelay: 1000,    
+    maxRetries: 1,       
+    timeout: 30000       
 };
 
 function App() {
@@ -64,7 +64,7 @@ function App() {
     } | null>(null);
     const [clipboardSupported, setClipboardSupported] = useState(false);
 
-    // Check authentication and clipboard support on mount
+    
     useEffect(() => {
         setAuthenticated(isAuthenticated());
         setClipboardSupported(isClipboardSupported());
@@ -94,7 +94,7 @@ function App() {
         const reader = new FileReader();
         reader.onloadend = () => {
             setUploadedImage(reader.result as string);
-            setThumbnails([]); // Clear previous results
+            setThumbnails([]); 
             toast.success('Image uploaded successfully!');
         };
         reader.readAsDataURL(file);
@@ -127,19 +127,19 @@ function App() {
 
         const userChoices = { videoType, styleMood, photoPlacement, prompt };
 
-        // Generate thumbnails with batch processing for better performance
+        
         let completedCount = 0;
 
         console.log(`🚀 Starting batch processing: ${initialThumbnails.length} thumbnails in batches of ${BATCH_CONFIG.batchSize}`);
         console.log(`⚙️ Configuration: ${BATCH_CONFIG.batchSize} concurrent, ${BATCH_CONFIG.batchDelay}ms delay, ${BATCH_CONFIG.timeout}ms timeout`);
 
-        // Process thumbnails in batches
+        
         for (let i = 0; i < initialThumbnails.length; i += BATCH_CONFIG.batchSize) {
             const batch = initialThumbnails.slice(i, i + BATCH_CONFIG.batchSize);
             const batchNumber = Math.floor(i / BATCH_CONFIG.batchSize) + 1;
             const totalBatches = Math.ceil(initialThumbnails.length / BATCH_CONFIG.batchSize);
 
-            // Update batch info for UI
+            
             setBatchInfo({
                 currentBatch: batchNumber,
                 totalBatches,
@@ -148,12 +148,12 @@ function App() {
 
             console.log(`📦 Processing batch ${batchNumber}/${totalBatches} with ${batch.length} thumbnails`);
 
-            // Process current batch in parallel with timeout
+            
             const batchPromises = batch.map(async (thumb) => {
                 try {
                     console.log(`🔄 Starting generation for thumbnail ${thumb.id} (${thumb.aspectRatio})`);
 
-                    // Add timeout to each thumbnail generation
+                    
                     const resultUrl = await Promise.race([
                         generateThumbnail(uploadedImage, userChoices, thumb.aspectRatio),
                         new Promise<string>((_, reject) =>
@@ -187,17 +187,17 @@ function App() {
                 }
             });
 
-            // Wait for current batch to complete
+            
             const batchResults = await Promise.allSettled(batchPromises);
 
-            // Log batch results
+            
             const successfulInBatch = batchResults.filter(result =>
                 result.status === 'fulfilled' && result.value.success
             ).length;
 
             console.log(`📊 Batch ${batchNumber} completed: ${successfulInBatch}/${batch.length} successful`);
 
-            // Add delay before next batch (except for the last batch)
+            
             if (i + BATCH_CONFIG.batchSize < initialThumbnails.length) {
                 console.log(`⏳ Waiting ${BATCH_CONFIG.batchDelay}ms before next batch...`);
                 await new Promise(resolve => setTimeout(resolve, BATCH_CONFIG.batchDelay));
@@ -215,7 +215,7 @@ function App() {
 
         const userChoices = { videoType, styleMood, photoPlacement, prompt };
 
-        // Set thumbnail to pending
+        
         setThumbnails(prev => prev.map(t =>
             t.id === thumbnailId ? { ...t, status: 'pending' } : t
         ));
@@ -261,28 +261,28 @@ function App() {
 
         try {
             for (const thumb of successfulThumbs) {
-                // Create an image element to load the image data
+                
                 const img = new Image();
                 img.crossOrigin = 'Anonymous';
 
-                // Create a canvas to draw the image with the correct aspect ratio
+                
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
 
-                // Set canvas dimensions based on aspect ratio
+                
                 if (thumb.aspectRatio === '16:9') {
-                    canvas.width = 1280;  // Standard HD width
-                    canvas.height = 720;   // Standard HD height (16:9)
-                } else { // 9:16
-                    canvas.width = 720;    // Standard portrait width
-                    canvas.height = 1280;   // Standard portrait height (9:16)
+                    canvas.width = 1280;  
+                    canvas.height = 720;   
+                } else { 
+                    canvas.width = 720;    
+                    canvas.height = 1280;   
                 }
 
-                // Load the image and draw it on the canvas
+                
                 await new Promise<void>((resolve, reject) => {
                     img.onload = () => {
                         try {
-                            // Draw the image to cover the entire canvas while maintaining aspect ratio
+                            
                             ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
                             resolve();
                         } catch (error) {
@@ -293,7 +293,7 @@ function App() {
                     img.src = thumb.url!;
                 });
 
-                // Convert canvas to blob and add to zip
+                
                 const blob = await new Promise<Blob>((resolve, reject) => {
                     canvas.toBlob((blob) => {
                         if (blob) {
@@ -301,10 +301,10 @@ function App() {
                         } else {
                             reject(new Error('Canvas to Blob conversion failed'));
                         }
-                    }, 'image/jpeg', 0.95); // 0.95 quality for good compression/quality balance
+                    }, 'image/jpeg', 0.95); 
                 });
 
-                // Add to zip with appropriate naming
+                
                 zip.file(`thumbnail-${thumb.id}-${thumb.aspectRatio}.jpg`, blob, { binary: true });
             }
 
@@ -440,7 +440,7 @@ function App() {
                 batchInfo={batchInfo}
             />
 
-            {/* Show thumbnails as they generate */}
+            
             <div className="w-full max-w-6xl mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {thumbnails.map(thumb => (
@@ -468,7 +468,7 @@ function App() {
 
         return (
             <div className="w-full mx-auto flex flex-col items-center gap-8 mt-4 px-4">
-                {/* Success Summary */}
+                
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -482,7 +482,7 @@ function App() {
                     </p>
                 </motion.div>
 
-                {/* Landscape Section */}
+                
                 <section className="w-full">
                     <h2 className="text-3xl font-permanent-marker text-neutral-200 mb-6 text-center">Landscape (16:9)</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -502,7 +502,7 @@ function App() {
                     </div>
                 </section>
 
-                 {/* Portrait Section */}
+                 
                  <section className="w-full">
                     <h2 className="text-3xl font-permanent-marker text-neutral-200 mb-6 text-center">Portrait (9:16)</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
@@ -545,7 +545,7 @@ function App() {
         );
     };
 
-    // Show login form if not authenticated
+    
     if (!authenticated) {
         return (
             <main className="bg-black text-neutral-200 min-h-screen w-full flex flex-col items-center justify-center p-4 overflow-x-hidden relative">
@@ -580,12 +580,12 @@ function App() {
         );
     }
 
-    // Show main app if authenticated
+    
     return (
         <main className="bg-black text-neutral-200 min-h-screen w-full flex flex-col items-center justify-center p-4 pb-24 overflow-x-hidden relative">
             <div className="absolute top-0 left-0 w-full h-full bg-grid-white/[0.05]"></div>
 
-            {/* Logout Button */}
+            
             <div className="absolute top-4 right-4 z-20">
                 <button
                     onClick={handleLogout}
@@ -607,7 +607,7 @@ function App() {
                 {appState === 'results-shown' && renderResultsState()}
             </div>
 
-            {/* Toast Notifications */}
+            
             <Toaster
                 position="top-right"
                 toastOptions={{

@@ -1,7 +1,7 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
+
+
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { DraggableCardContainer, DraggableCardBody } from './ui/draggable-card';
 import { cn } from '../lib/utils';
@@ -54,7 +54,7 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({ imageUrl, caption, status, 
     const lastShakeTime = useRef(0);
     const lastVelocity = useRef({ x: 0, y: 0 });
 
-    // Reset states when the image URL changes or status goes to pending.
+    
     useEffect(() => {
         if (status === 'pending') {
             setIsDeveloped(false);
@@ -66,34 +66,34 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({ imageUrl, caption, status, 
         }
     }, [imageUrl, status]);
 
-    // When the image is loaded, start the developing animation.
+    
     useEffect(() => {
         if (isImageLoaded) {
             const timer = setTimeout(() => {
                 setIsDeveloped(true);
-            }, 200); // Short delay before animation starts
+            }, 200); 
             return () => clearTimeout(timer);
         }
     }, [isImageLoaded]);
 
     const handleDragStart = () => {
-        // Reset velocity on new drag to prevent false triggers from old data
+        
         lastVelocity.current = { x: 0, y: 0 };
     };
 
     const handleDrag = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
         if (!onShake || isMobile) return;
 
-        const velocityThreshold = 1500; // Require a high velocity to be considered a "shake".
-        const shakeCooldown = 2000; // 2 seconds cooldown to prevent spamming.
+        const velocityThreshold = 1500; 
+        const shakeCooldown = 2000; 
 
         const { x, y } = info.velocity;
         const { x: prevX, y: prevY } = lastVelocity.current;
         const now = Date.now();
 
-        // A true "shake" is a rapid movement AND a sharp change in direction.
-        // We detect this by checking if the velocity is high and if its direction
-        // has reversed from the last frame (i.e., the dot product is negative).
+        
+        
+        
         const magnitude = Math.sqrt(x * x + y * y);
         const dotProduct = (x * prevX) + (y * prevY);
 
@@ -119,7 +119,7 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({ imageUrl, caption, status, 
                             {onDownload && (
                                 <button
                                     onClick={(e) => {
-                                        e.stopPropagation(); // Prevent drag from starting on click
+                                        e.stopPropagation(); 
                                         onDownload(caption);
                                     }}
                                     className="p-2 bg-black/50 rounded-full text-white hover:bg-black/75 focus:outline-none focus:ring-2 focus:ring-white"
@@ -147,7 +147,7 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({ imageUrl, caption, status, 
                         </div>
 
 
-                        {/* The developing chemical overlay - fades out */}
+                        
                         <div
                             className={`absolute inset-0 z-10 bg-[#3a322c] transition-opacity duration-[3500ms] ease-out ${
                                 isDeveloped ? 'opacity-0' : 'opacity-100'
@@ -155,7 +155,7 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({ imageUrl, caption, status, 
                             aria-hidden="true"
                         />
                         
-                        {/* The Image - fades in and color corrects */}
+                        
                         <img
                             key={imageUrl}
                             src={imageUrl}

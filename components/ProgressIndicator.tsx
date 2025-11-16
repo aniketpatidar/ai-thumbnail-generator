@@ -1,7 +1,7 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
+
+
+
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { RefreshCw, Layers } from 'lucide-react';
@@ -55,7 +55,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                     {message || steps[currentStep]}
                 </p>
 
-                {/* Batch Processing Info */}
+                
                 {batchInfo && (
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
@@ -71,7 +71,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                 )}
             </div>
 
-            {/* Progress Bar */}
+            
             <div className="w-full bg-neutral-800 rounded-full h-2 mb-4">
                 <motion.div
                     className="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full"
@@ -81,13 +81,13 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                 />
             </div>
 
-            {/* Progress Text */}
+            
             <div className="flex justify-between text-sm text-neutral-400">
                 <span>{current} of {total}</span>
                 <span>{percentage}%</span>
             </div>
 
-            {/* Step Indicators */}
+            
             <div className="flex justify-center mt-4 space-x-2">
                 {Array.from({ length: total }, (_, i) => (
                     <motion.div

@@ -1,7 +1,7 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
+
+
+
+
 import OpenAI from 'openai';
 import { enhancePromptWithOpenAI } from "./promptService";
 
@@ -22,26 +22,26 @@ interface EnhancedPrompt {
     visualBalance: string;
 }
 
-/**
- * Generates a thumbnail image based on a source image, user questionnaire choices, and aspect ratio.
- * This involves a two-step AI process:
- * 1. Generate a detailed creative prompt based on user's high-level choices using Groq API.
- * 2. Use that prompt along with the source image to generate the final thumbnail image using OpenRouter API.
- * @param imageDataUrl A data URL string of the source image.
- * @param userChoices The user's selections from the questionnaire.
- * @param aspectRatio The target aspect ratio for the thumbnail ('16:9' or '9:16').
- * @returns A promise that resolves to a base64-encoded image data URL.
- */
+
+
+
+
+
+
+
+
+
+
 export async function generateThumbnail(
     imageDataUrl: string,
     userChoices: UserChoices,
     aspectRatio: '16:9' | '9:16'
 ): Promise<string> {
 
-    // AI Step 1: Generate a detailed prompt from user choices using Groq API
+    
     const enhancedPrompt = await enhancePromptWithOpenAI(userChoices);
 
-    // AI Step 2: Use the detailed prompt and the user's image to generate the thumbnail via OpenRouter API
+    
     try {
         const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
         if (!GEMINI_API_KEY) {
@@ -79,7 +79,7 @@ export async function generateThumbnail(
         Produce a realistic, clickable YouTube thumbnail where the user’s face is the focal point, supported by bold readable text and a clean, high-contrast layout optimized for CTR.
         `;
 
-        // Use absolute URL in production, relative in development
+        
         const baseUrl = process.env.NODE_ENV === 'production' 
             ? 'https://generativelanguage.googleapis.com/v1beta'
             : '/api/gemini/v1beta';
@@ -102,7 +102,7 @@ export async function generateThumbnail(
                                 {
                                     inlineData: {
                                         mimeType: "image/jpeg",
-                                        data: imageDataUrl.split(',')[1] // Remove the data URL prefix
+                                        data: imageDataUrl.split(',')[1] 
                                     }
                                 }
                             ]
@@ -122,13 +122,13 @@ export async function generateThumbnail(
 
         const data = await response.json();
         
-        // Check if we have a valid response with content
+        
         if (!data.candidates || !data.candidates[0]?.content?.parts) {
             console.error('Invalid response from Gemini API:', data);
             throw new Error('Invalid response format from Gemini API');
         }
 
-        // Find the first part that contains image data
+        
         const imagePart = data.candidates[0].content.parts.find(part => part.inlineData?.data);
         
         if (imagePart?.inlineData?.data) {
@@ -136,7 +136,7 @@ export async function generateThumbnail(
             return `data:${mimeType};base64,${imagePart.inlineData.data}`;
         }
         
-        // If no inline data, check if there's a text part with a data URL
+        
         const textPart = data.candidates[0].content.parts.find(part => part.text);
         if (textPart?.text) {
             const imageMatch = textPart.text.match(/data:image\/[^;]+;base64,[^\s"]+/);

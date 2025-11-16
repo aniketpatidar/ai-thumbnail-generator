@@ -1,7 +1,7 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
+
+
+
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, X, Save, RotateCcw } from 'lucide-react';
@@ -68,7 +68,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         </div>
 
                         <div className="space-y-6">
-                            {/* Enhanced Prompts */}
+                            
                             <div>
                                 <label className="flex items-center gap-3 cursor-pointer">
                                     <input
@@ -87,7 +87,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                 </p>
                             </div>
 
-                            {/* Generation Count */}
+                            
                             <div>
                                 <label className="block text-neutral-200 mb-2">
                                     Number of thumbnails to generate
@@ -106,7 +106,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                 </select>
                             </div>
 
-                            {/* Quality Setting */}
+                            
                             <div>
                                 <label className="block text-neutral-200 mb-2">
                                     Generation Quality
@@ -124,7 +124,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                 </select>
                             </div>
 
-                            {/* Auto Save */}
+                            
                             <div>
                                 <label className="flex items-center gap-3 cursor-pointer">
                                     <input

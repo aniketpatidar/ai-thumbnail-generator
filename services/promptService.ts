@@ -1,7 +1,7 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
+
+
+
+
 
 interface UserChoices {
     videoType: string;
@@ -20,9 +20,9 @@ interface EnhancedPrompt {
     visualBalance: string;
 }
 
-/**
- * Enhanced prompt rewriting service using Gemini API for fast inference
- */
+
+
+
 export async function enhancePromptWithOpenAI(userChoices: UserChoices): Promise<EnhancedPrompt> {
     try {
         const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -64,7 +64,7 @@ export async function enhancePromptWithOpenAI(userChoices: UserChoices): Promise
         - Make sure the response is strictly valid JSON (no extra commentary).
         `;
 
-        // Use direct Gemini API call
+        
         const baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
 
         const response = await fetch(
@@ -113,13 +113,13 @@ export async function enhancePromptWithOpenAI(userChoices: UserChoices): Promise
         }
 
         try {
-            // Clean up the content to fix JSON parsing issues
+            
             let cleanedContent = content.trim();
 
-            // Remove any markdown code block markers
+            
             cleanedContent = cleanedContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
 
-            // Try to extract JSON from the content
+            
             const jsonMatch = cleanedContent.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
                 cleanedContent = jsonMatch[0];
@@ -137,7 +137,7 @@ export async function enhancePromptWithOpenAI(userChoices: UserChoices): Promise
             };
         } catch (parseError) {
             console.warn('JSON parsing failed, using content as detailed prompt:', parseError);
-            // If JSON parsing fails, treat the content as a detailed prompt
+            
             return {
                 detailedPrompt: content,
                 styleGuide: `Style: ${userChoices.styleMood}`,
@@ -196,9 +196,9 @@ function createBasicEnhancedPrompt(userChoices: UserChoices): EnhancedPrompt {
     };
 }
 
-/**
- * Generate a shareable link for thumbnails
- */
+
+
+
 export function generateShareLink(thumbnailData: {
     videoType: string;
     styleMood: string;

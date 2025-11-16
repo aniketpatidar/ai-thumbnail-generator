@@ -1,7 +1,7 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
+
+
+
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Lock, User } from 'lucide-react';
@@ -23,7 +23,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
         setError('');
         setIsLoading(true);
 
-        // Simulate a small delay for better UX
+        
         await new Promise(resolve => setTimeout(resolve, 500));
 
         if (login(username, password)) {
@@ -49,7 +49,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Username Field */}
+                    
                     <div>
                         <label htmlFor="username" className="block text-sm font-medium text-neutral-300 mb-2">
                             Username
@@ -71,7 +71,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                         </div>
                     </div>
 
-                    {/* Password Field */}
+                    
                     <div>
                         <label htmlFor="password" className="block text-sm font-medium text-neutral-300 mb-2">
                             Password
@@ -101,7 +101,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                         </div>
                     </div>
 
-                    {/* Error Message */}
+                    
                     {error && (
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
@@ -112,7 +112,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                         </motion.div>
                     )}
 
-                    {/* Login Button */}
+                    
                     <button
                         type="submit"
                         disabled={isLoading || !username || !password}
