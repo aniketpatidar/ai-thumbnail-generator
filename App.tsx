@@ -14,7 +14,7 @@ import { DraggableCardBody, DraggableCardContainer } from './components/ui/dragg
 import JSZip from 'jszip';
 import { createThumbnailAlbumPage } from './lib/albumUtils';
 import { copyTextToClipboard, isClipboardSupported } from './lib/clipboardUtils';
-import { enhancePromptWithOpenAI, generateShareLink } from './services/promptService';
+import { generateShareLink } from './services/promptService';
 import { isAuthenticated, logout } from './lib/auth';
 import toast, { Toaster } from 'react-hot-toast';
 import { LogOut } from 'lucide-react';

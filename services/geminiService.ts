@@ -2,8 +2,7 @@
 
 
 
-import OpenAI from 'openai';
-import { enhancePromptWithOpenAI } from "./promptService";
+import { enhancePrompt } from "./promptService";
 
 interface UserChoices {
     videoType: string;
@@ -39,7 +38,7 @@ export async function generateThumbnail(
 ): Promise<string> {
 
     
-    const enhancedPrompt = await enhancePromptWithOpenAI(userChoices);
+    const enhancedPrompt = await enhancePrompt(userChoices);
 
     
     try {
