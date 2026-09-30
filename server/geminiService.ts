@@ -8,6 +8,19 @@ const IMAGE_MODEL = 'gemini-3.1-flash-image';
 
 export type AspectRatio = '16:9' | '9:16';
 
+const FREE_TIER_KEY_MESSAGE = "This Gemini API key is on the free tier, which can't generate images. Enable billing for its Google Cloud project, then try again.";
+const RATE_LIMIT_MESSAGE = 'Your Gemini API key hit its rate limit. Wait a minute and try again.';
+
+export function describeGeminiError(status: number, message: string | undefined): string {
+    if (status === 429 && /free_tier|limit: 0\b/i.test(message ?? '')) {
+        return FREE_TIER_KEY_MESSAGE;
+    }
+    if (status === 429) {
+        return RATE_LIMIT_MESSAGE;
+    }
+    return message ?? `API request failed with status ${status}`;
+}
+
 interface EnhancedPrompt {
     detailedPrompt: string;
     styleGuide: string;
@@ -116,7 +129,7 @@ export async function generateThumbnail(
 
         if (!response.ok) {
             const errorBody = await response.json().catch(() => null);
-            throw new Error(errorBody?.error?.message ?? `API request failed with status ${response.status}`);
+            throw new Error(describeGeminiError(response.status, errorBody?.error?.message));
         }
 
         const data = await response.json();
