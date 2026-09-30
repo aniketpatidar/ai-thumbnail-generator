@@ -1,51 +1,30 @@
+import { createClient, type Session } from '@supabase/supabase-js';
 
+const supabase = createClient(
+    import.meta.env.VITE_SUPABASE_URL,
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+);
 
-
-
-
-const DEMO_USERNAME = process.env.DEMO_USERNAME;
-const DEMO_PASSWORD = process.env.DEMO_PASSWORD;
-const AUTH_TOKEN_KEY = 'auth_token';
-
-
-
-
-
-
-
-export function login(username: string, password: string): boolean {
-    
-    if (!DEMO_USERNAME || !DEMO_PASSWORD) {
-        console.error('Demo credentials not configured in environment variables');
-        return false;
+export async function signInWithGoogle(): Promise<void> {
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin }
+    });
+    if (error) {
+        throw error;
     }
-
-    if (username === DEMO_USERNAME && password === DEMO_PASSWORD) {
-        localStorage.setItem(AUTH_TOKEN_KEY, 'authenticated'); 
-        return true;
-    }
-    return false;
 }
 
-
-
-
-
-export function isAuthenticated(): boolean {
-    return localStorage.getItem(AUTH_TOKEN_KEY) === 'authenticated';
+export async function signOut(): Promise<void> {
+    await supabase.auth.signOut();
 }
 
-
-
-
-export function logout(): void {
-    localStorage.removeItem(AUTH_TOKEN_KEY);
+export async function getAccessToken(): Promise<string | undefined> {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token;
 }
 
-
-
-
-
-export function register(): never {
-    throw new Error("User registration is not supported in this demo application.");
+export function onSessionChange(callback: (session: Session | null) => void): () => void {
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => callback(session));
+    return () => data.subscription.unsubscribe();
 }
