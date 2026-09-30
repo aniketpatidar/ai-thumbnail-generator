@@ -84,14 +84,14 @@ export async function generateThumbnail(
             : '/api/gemini/v1beta';
             
         const response = await fetch(
-            `${baseUrl}/models/gemini-2.5-flash-image-preview:generateContent?key=${GEMINI_API_KEY}`,
+            `${baseUrl}/models/gemini-3.1-flash-image:generateContent?key=${GEMINI_API_KEY}`,
             {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: "gemini-2.5-flash-image-preview",
+                    model: "gemini-3.1-flash-image",
                     contents: [
                         {
                             parts: [
@@ -109,7 +109,9 @@ export async function generateThumbnail(
                     ],
                     generationConfig: {
                         temperature: 0.8,
-                        maxOutputTokens: 1000
+                        imageConfig: {
+                            aspectRatio
+                        }
                     }
                 })
             }

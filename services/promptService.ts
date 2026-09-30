@@ -68,7 +68,7 @@ export async function enhancePrompt(userChoices: UserChoices): Promise<EnhancedP
         const baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
 
         const response = await fetch(
-            `${baseUrl}/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+            `${baseUrl}/models/gemini-3.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
             {
                 method: 'POST',
                 headers: {
@@ -76,7 +76,7 @@ export async function enhancePrompt(userChoices: UserChoices): Promise<EnhancedP
                     'User-Agent': 'AI-Thumbnail-Generator/1.0'
                 },
                 body: JSON.stringify({
-                    model: "gemini-1.5-flash",
+                    model: "gemini-3.5-flash-lite",
                     contents: [
                         {
                             parts: [
