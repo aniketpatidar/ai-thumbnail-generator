@@ -4,6 +4,8 @@
 
 import { enhancePrompt } from "./promptService";
 
+const IMAGE_MODEL = 'gemini-3.1-flash-image';
+
 interface UserChoices {
     videoType: string;
     styleMood: string;
@@ -84,14 +86,13 @@ export async function generateThumbnail(
             : '/api/gemini/v1beta';
             
         const response = await fetch(
-            `${baseUrl}/models/gemini-3.1-flash-image:generateContent?key=${GEMINI_API_KEY}`,
+            `${baseUrl}/models/${IMAGE_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
             {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: "gemini-3.1-flash-image",
                     contents: [
                         {
                             parts: [

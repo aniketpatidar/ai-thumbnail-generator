@@ -3,6 +3,8 @@
 
 
 
+const PROMPT_MODEL = 'gemini-3.5-flash-lite';
+
 interface UserChoices {
     videoType: string;
     styleMood: string;
@@ -68,7 +70,7 @@ export async function enhancePrompt(userChoices: UserChoices): Promise<EnhancedP
         const baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
 
         const response = await fetch(
-            `${baseUrl}/models/gemini-3.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
+            `${baseUrl}/models/${PROMPT_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
             {
                 method: 'POST',
                 headers: {
@@ -76,7 +78,6 @@ export async function enhancePrompt(userChoices: UserChoices): Promise<EnhancedP
                     'User-Agent': 'AI-Thumbnail-Generator/1.0'
                 },
                 body: JSON.stringify({
-                    model: "gemini-3.5-flash-lite",
                     contents: [
                         {
                             parts: [
@@ -88,7 +89,6 @@ export async function enhancePrompt(userChoices: UserChoices): Promise<EnhancedP
                     ],
                     generationConfig: {
                         temperature: 0.7,
-                        maxOutputTokens: 800,
                         topP: 0.8,
                         topK: 40
                     }
