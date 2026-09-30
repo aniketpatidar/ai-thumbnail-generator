@@ -23,7 +23,7 @@ interface EnhancedPrompt {
 
 
 
-export async function enhancePromptWithOpenAI(userChoices: UserChoices): Promise<EnhancedPrompt> {
+export async function enhancePrompt(userChoices: UserChoices): Promise<EnhancedPrompt> {
     try {
         const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
         if (!GEMINI_API_KEY) {
