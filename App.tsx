@@ -10,6 +10,7 @@ import ImageUploader from './components/PolaroidUploader';
 import EnhancedThumbnailCard from './components/EnhancedThumbnailCard';
 import ProgressIndicator from './components/ProgressIndicator';
 import AuthForm from './components/AuthForm';
+import ApiKeyDialog from './components/ApiKeyDialog';
 import { DraggableCardBody, DraggableCardContainer } from './components/ui/draggable-card';
 import JSZip from 'jszip';
 import { createThumbnailAlbumPage } from './lib/albumUtils';
@@ -17,8 +18,9 @@ import { copyTextToClipboard, isClipboardSupported } from './lib/clipboardUtils'
 import { generateShareLink } from './lib/shareLink';
 import { downscaleImage } from './lib/imageUtils';
 import { onSessionChange, signOut } from './lib/auth';
+import { clearGeminiKey, getGeminiKey, saveGeminiKey } from './lib/geminiKey';
 import toast, { Toaster } from 'react-hot-toast';
-import { LogOut } from 'lucide-react';
+import { KeyRound, LogOut } from 'lucide-react';
 
 
 interface Thumbnail {
@@ -49,6 +51,8 @@ const BATCH_CONFIG = {
 
 function App() {
     const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+    const [geminiKey, setGeminiKey] = useState<string | null>(getGeminiKey);
+    const [isKeyDialogOpen, setIsKeyDialogOpen] = useState(false);
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
     const [videoType, setVideoType] = useState('');
     const [styleMood, setStyleMood] = useState('');
@@ -71,8 +75,30 @@ function App() {
         return onSessionChange(session => setAuthenticated(!!session));
     }, []);
 
+    useEffect(() => {
+        if (authenticated && !geminiKey) {
+            setIsKeyDialogOpen(true);
+        }
+    }, [authenticated, geminiKey]);
+
+    const handleSaveKey = (apiKey: string) => {
+        saveGeminiKey(apiKey);
+        setGeminiKey(apiKey);
+        setIsKeyDialogOpen(false);
+        toast.success('API key saved');
+    };
+
+    const handleRemoveKey = () => {
+        clearGeminiKey();
+        setGeminiKey(null);
+        toast.success('API key removed');
+    };
+
     const handleLogout = async () => {
         await signOut();
+        clearGeminiKey();
+        setGeminiKey(null);
+        setIsKeyDialogOpen(false);
         setUploadedImage(null);
         setThumbnails([]);
         setVideoType('');
@@ -98,6 +124,11 @@ function App() {
     const handleGenerateClick = async () => {
         if (!uploadedImage || !videoType || !styleMood || !photoPlacement || !prompt) {
             toast.error('Please fill in all fields before generating thumbnails');
+            return;
+        }
+
+        if (!geminiKey) {
+            setIsKeyDialogOpen(true);
             return;
         }
 
@@ -585,7 +616,14 @@ function App() {
             <div className="absolute top-0 left-0 w-full h-full bg-grid-white/[0.05]"></div>
 
             
-            <div className="absolute top-4 right-4 z-20">
+            <div className="absolute top-4 right-4 z-20 flex gap-2">
+                <button
+                    onClick={() => setIsKeyDialogOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-neutral-800/80 backdrop-blur-sm border border-neutral-600 rounded-md text-neutral-300 hover:bg-neutral-700 hover:text-white transition-colors"
+                >
+                    <KeyRound className={`h-4 w-4 ${geminiKey ? 'text-green-400' : 'text-yellow-400'}`} />
+                    <span className="font-permanent-marker text-sm">{geminiKey ? 'API Key' : 'Add API Key'}</span>
+                </button>
                 <button
                     onClick={handleLogout}
                     className="flex items-center gap-2 px-4 py-2 bg-neutral-800/80 backdrop-blur-sm border border-neutral-600 rounded-md text-neutral-300 hover:bg-neutral-700 hover:text-white transition-colors"
@@ -594,6 +632,14 @@ function App() {
                     <span className="font-permanent-marker text-sm">Logout</span>
                 </button>
             </div>
+
+            <ApiKeyDialog
+                isOpen={isKeyDialogOpen}
+                currentKey={geminiKey}
+                onSave={handleSaveKey}
+                onRemove={handleRemoveKey}
+                onClose={() => setIsKeyDialogOpen(false)}
+            />
 
             <div className="z-10 flex flex-col items-center justify-center w-full h-full flex-1">
                 <div className="text-center mb-10">
