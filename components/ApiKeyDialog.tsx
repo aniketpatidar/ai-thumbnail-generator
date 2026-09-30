@@ -53,7 +53,7 @@ const ApiKeyDialog: React.FC<ApiKeyDialogProps> = ({ isOpen, currentKey, onSave,
                         </div>
 
                         <p className="text-sm text-neutral-400 mb-4">
-                            Thumbnails are generated with your key. It stays in this browser and is cleared when you log out.
+                            Thumbnails are generated with your key, which needs billing enabled: free-tier keys can't generate images. It stays in this browser and is cleared when you log out.
                         </p>
                         <a
                             href={AI_STUDIO_KEY_URL}
