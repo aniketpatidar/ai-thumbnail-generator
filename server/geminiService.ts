@@ -31,18 +31,15 @@ interface EnhancedPrompt {
 export async function generateThumbnail(
     imageDataUrl: string,
     userChoices: UserChoices,
-    aspectRatio: AspectRatio
+    aspectRatio: AspectRatio,
+    apiKey: string
 ): Promise<string> {
 
     
-    const enhancedPrompt = await enhancePrompt(userChoices);
+    const enhancedPrompt = await enhancePrompt(userChoices, apiKey);
 
     
     try {
-        const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-        if (!GEMINI_API_KEY) {
-            throw new Error('GEMINI_API_KEY environment variable is not set');
-        }
 
         const promptText = `
         Generate a YouTube thumbnail using the creative direction below.
@@ -89,7 +86,7 @@ export async function generateThumbnail(
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-goog-api-key': GEMINI_API_KEY
+                    'x-goog-api-key': apiKey
                 },
                 body: JSON.stringify({
                     contents: [
@@ -118,7 +115,8 @@ export async function generateThumbnail(
         );
 
         if (!response.ok) {
-            throw new Error(`API request failed with status ${response.status}`);
+            const errorBody = await response.json().catch(() => null);
+            throw new Error(errorBody?.error?.message ?? `API request failed with status ${response.status}`);
         }
 
         const data = await response.json();

@@ -8,6 +8,11 @@ export async function POST(request: Request): Promise<Response> {
         return Response.json({ error: 'Your session has expired. Please sign in again.' }, { status: 401 });
     }
 
+    const apiKey = request.headers.get('x-gemini-api-key')?.trim();
+    if (!apiKey) {
+        return Response.json({ error: 'Add your Gemini API key to generate thumbnails.' }, { status: 400 });
+    }
+
     const { image, userChoices, aspectRatio } = await request.json().catch(() => ({}));
     const { videoType, styleMood, photoPlacement, prompt } = userChoices ?? {};
     const choicesAreValid = [videoType, styleMood, photoPlacement, prompt].every(value => typeof value === 'string');
@@ -16,7 +21,7 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     try {
-        const thumbnail = await generateThumbnail(image, { videoType, styleMood, photoPlacement, prompt }, aspectRatio);
+        const thumbnail = await generateThumbnail(image, { videoType, styleMood, photoPlacement, prompt }, aspectRatio, apiKey);
         return Response.json({ image: thumbnail });
     } catch (error) {
         const message = error instanceof Error ? error.message : 'An unknown error occurred.';

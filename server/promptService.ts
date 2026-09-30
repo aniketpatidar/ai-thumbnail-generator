@@ -25,12 +25,8 @@ interface EnhancedPrompt {
 
 
 
-export async function enhancePrompt(userChoices: UserChoices): Promise<EnhancedPrompt> {
+export async function enhancePrompt(userChoices: UserChoices, apiKey: string): Promise<EnhancedPrompt> {
     try {
-        const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-        if (!GEMINI_API_KEY) {
-            throw new Error('GEMINI_API_KEY environment variable is not set');
-        }
 
         const USER_PROMPT = `
         Generate a thumbnail design plan for:
@@ -75,7 +71,7 @@ export async function enhancePrompt(userChoices: UserChoices): Promise<EnhancedP
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-goog-api-key': GEMINI_API_KEY,
+                    'x-goog-api-key': apiKey,
                     'User-Agent': 'AI-Thumbnail-Generator/1.0'
                 },
                 body: JSON.stringify({

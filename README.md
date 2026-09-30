@@ -27,15 +27,14 @@ npm install
 
 ## Configuration
 
-Users sign in with their Google account, handled by [Supabase Auth](https://supabase.com/docs/guides/auth). The Gemini API key lives only on the server, in the Vercel functions under `api/`, which generate thumbnails only for signed-in users.
+Users sign in with their Google account, handled by [Supabase Auth](https://supabase.com/docs/guides/auth), then add their own Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey). The key is saved only in their browser and removed on logout. The Vercel function under `api/` uses it to call Gemini for signed-in users and never stores it, so generation runs on each user's own quota.
 
 | Variable | Purpose |
 | --- | --- |
-| `GEMINI_API_KEY` | Gemini API key used for prompt enhancement and image generation. Server-only. |
 | `VITE_SUPABASE_URL` | Supabase project URL. Public. |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (`sb_publishable_...`). Public. |
 
-**Production:** set all three in Vercel under Project → Settings → Environment Variables.
+**Production:** set both in Vercel under Project → Settings → Environment Variables.
 
 **Local:** copy the example file and fill it in:
 
