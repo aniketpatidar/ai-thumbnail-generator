@@ -5,7 +5,7 @@
 
 const PROMPT_MODEL = 'gemini-3.5-flash-lite';
 
-interface UserChoices {
+export interface UserChoices {
     videoType: string;
     styleMood: string;
     photoPlacement: string;
@@ -70,11 +70,12 @@ export async function enhancePrompt(userChoices: UserChoices): Promise<EnhancedP
         const baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
 
         const response = await fetch(
-            `${baseUrl}/models/${PROMPT_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+            `${baseUrl}/models/${PROMPT_MODEL}:generateContent`,
             {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'x-goog-api-key': GEMINI_API_KEY,
                     'User-Agent': 'AI-Thumbnail-Generator/1.0'
                 },
                 body: JSON.stringify({
@@ -194,26 +195,4 @@ function createBasicEnhancedPrompt(userChoices: UserChoices): EnhancedPrompt {
         imagePlacement: imagePlacementGuidance[userChoices.photoPlacement as keyof typeof imagePlacementGuidance] || `Position user photo on ${userChoices.photoPlacement} side`,
         visualBalance: 'Ensure text and image don\'t overlap, maintain clear visual hierarchy with proper spacing'
     };
-}
-
-
-
-
-export function generateShareLink(thumbnailData: {
-    videoType: string;
-    styleMood: string;
-    photoPlacement: string;
-    prompt: string;
-    thumbnails: Array<{ id: number; url: string; aspectRatio: string }>;
-}): string {
-    const baseUrl = window.location.origin;
-    const params = new URLSearchParams({
-        videoType: thumbnailData.videoType,
-        styleMood: thumbnailData.styleMood,
-        photoPlacement: thumbnailData.photoPlacement,
-        prompt: thumbnailData.prompt,
-        thumbnailCount: thumbnailData.thumbnails.length.toString()
-    });
-
-    return `${baseUrl}?${params.toString()}`;
 }

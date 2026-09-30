@@ -4,18 +4,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { generateThumbnail, regenerateThumbnail } from './services/geminiService';
+import { generateThumbnail, regenerateThumbnail } from './services/thumbnailService';
 import ThumbnailCard from './components/PolaroidCard';
 import ImageUploader from './components/PolaroidUploader';
 import EnhancedThumbnailCard from './components/EnhancedThumbnailCard';
 import ProgressIndicator from './components/ProgressIndicator';
-import LoginForm from './components/LoginForm';
+import AuthForm from './components/AuthForm';
 import { DraggableCardBody, DraggableCardContainer } from './components/ui/draggable-card';
 import JSZip from 'jszip';
 import { createThumbnailAlbumPage } from './lib/albumUtils';
 import { copyTextToClipboard, isClipboardSupported } from './lib/clipboardUtils';
-import { generateShareLink } from './services/promptService';
-import { isAuthenticated, logout } from './lib/auth';
+import { generateShareLink } from './lib/shareLink';
+import { downscaleImage } from './lib/imageUtils';
+import { onSessionChange, signOut } from './lib/auth';
 import toast, { Toaster } from 'react-hot-toast';
 import { LogOut } from 'lucide-react';
 
@@ -47,7 +48,7 @@ const BATCH_CONFIG = {
 };
 
 function App() {
-    const [authenticated, setAuthenticated] = useState(false);
+    const [authenticated, setAuthenticated] = useState<boolean | null>(null);
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
     const [videoType, setVideoType] = useState('');
     const [styleMood, setStyleMood] = useState('');
@@ -66,18 +67,12 @@ function App() {
 
     
     useEffect(() => {
-        setAuthenticated(isAuthenticated());
         setClipboardSupported(isClipboardSupported());
+        return onSessionChange(session => setAuthenticated(!!session));
     }, []);
 
-    const handleLoginSuccess = () => {
-        setAuthenticated(true);
-        toast.success('Welcome! You are now signed in.');
-    };
-
-    const handleLogout = () => {
-        logout();
-        setAuthenticated(false);
+    const handleLogout = async () => {
+        await signOut();
         setUploadedImage(null);
         setThumbnails([]);
         setVideoType('');
@@ -90,14 +85,14 @@ function App() {
         toast.success('You have been signed out.');
     };
 
-    const handleImageUpload = (file: File) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setUploadedImage(reader.result as string);
+    const handleImageUpload = async (file: File) => {
+        try {
+            setUploadedImage(await downscaleImage(file));
             setThumbnails([]); 
             toast.success('Image uploaded successfully!');
-        };
-        reader.readAsDataURL(file);
+        } catch {
+            toast.error('Could not read that image. Please try a different file.');
+        }
     };
 
     const handleGenerateClick = async () => {
@@ -546,12 +541,16 @@ function App() {
     };
 
     
+    if (authenticated === null) {
+        return <main className="bg-black min-h-screen w-full" />;
+    }
+
     if (!authenticated) {
         return (
             <main className="bg-black text-neutral-200 min-h-screen w-full flex flex-col items-center justify-center p-4 overflow-x-hidden relative">
                 <div className="absolute top-0 left-0 w-full h-full bg-grid-white/[0.05]"></div>
                 <div className="z-10 w-full flex flex-col items-center justify-center">
-                    <LoginForm onLoginSuccess={handleLoginSuccess} />
+                    <AuthForm />
                 </div>
                 <Toaster
                     position="top-right"

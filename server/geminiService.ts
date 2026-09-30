@@ -2,16 +2,11 @@
 
 
 
-import { enhancePrompt } from "./promptService";
+import { enhancePrompt, type UserChoices } from "./promptService.js";
 
 const IMAGE_MODEL = 'gemini-3.1-flash-image';
 
-interface UserChoices {
-    videoType: string;
-    styleMood: string;
-    photoPlacement: string;
-    prompt: string;
-}
+export type AspectRatio = '16:9' | '9:16';
 
 interface EnhancedPrompt {
     detailedPrompt: string;
@@ -36,7 +31,7 @@ interface EnhancedPrompt {
 export async function generateThumbnail(
     imageDataUrl: string,
     userChoices: UserChoices,
-    aspectRatio: '16:9' | '9:16'
+    aspectRatio: AspectRatio
 ): Promise<string> {
 
     
@@ -81,16 +76,20 @@ export async function generateThumbnail(
         `;
 
         
-        const baseUrl = process.env.NODE_ENV === 'production' 
-            ? 'https://generativelanguage.googleapis.com/v1beta'
-            : '/api/gemini/v1beta';
-            
+        const [, inputMimeType, imageData] = imageDataUrl.match(/^data:([^;]+);base64,(.+)$/) ?? [];
+        if (!inputMimeType || !imageData) {
+            throw new Error('Uploaded image is not a base64 data URL');
+        }
+
+        const baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
+
         const response = await fetch(
-            `${baseUrl}/models/${IMAGE_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+            `${baseUrl}/models/${IMAGE_MODEL}:generateContent`,
             {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'x-goog-api-key': GEMINI_API_KEY
                 },
                 body: JSON.stringify({
                     contents: [
@@ -101,8 +100,8 @@ export async function generateThumbnail(
                                 },
                                 {
                                     inlineData: {
-                                        mimeType: "image/jpeg",
-                                        data: imageDataUrl.split(',')[1] 
+                                        mimeType: inputMimeType,
+                                        data: imageData
                                     }
                                 }
                             ]
@@ -147,7 +146,6 @@ export async function generateThumbnail(
             }
         }
 
-        // If no image found in response, log the response and throw an error
         console.log('Unexpected response from Gemini API:', data);
         throw new Error('The AI model did not return a valid image. Please try again with a different prompt.');
 
@@ -156,17 +154,4 @@ export async function generateThumbnail(
         const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
         throw new Error(`The AI model failed to generate an image for aspect ratio ${aspectRatio}. Details: ${errorMessage}`);
     }
-}
-
-/**
- * Regenerate a specific thumbnail with the same parameters
- */
-export async function regenerateThumbnail(
-    imageDataUrl: string,
-    userChoices: UserChoices,
-    aspectRatio: '16:9' | '9:16',
-    thumbnailId: number
-): Promise<string> {
-    console.log(`Regenerating thumbnail ${thumbnailId} with aspect ratio ${aspectRatio}`);
-    return generateThumbnail(imageDataUrl, userChoices, aspectRatio);
 }

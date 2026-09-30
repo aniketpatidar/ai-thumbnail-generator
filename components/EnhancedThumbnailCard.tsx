@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, Download, Share2, RefreshCw, Check, AlertTriangle } from 'lucide-react';
 import { copyImageToClipboard, copyTextToClipboard, downloadImage } from '../lib/clipboardUtils';
-import { generateShareLink } from '../services/promptService';
+import { generateShareLink } from '../lib/shareLink';
 import { cn } from '../lib/utils';
 
 interface EnhancedThumbnailCardProps {
